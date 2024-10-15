@@ -31,7 +31,10 @@ public class DemoController {
         return StudentRepository.findById(id);
     }
 
-
+    @GetMapping("/age/{age}")
+    public @ResponseBody List<Student> getStudentByage(@PathVariable("age") int age){
+        return StudentRepository.findByAge(age);
+    }
 
 
 
