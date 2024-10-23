@@ -3,6 +3,7 @@ import com.example.demo.Model.Student;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ public class DemoController {
 
 
 
+
     @GetMapping("/id/{id}")
     public @ResponseBody Optional<Student> getStudent(@PathVariable("id") int id){
         return StudentRepository.findById(id);
@@ -42,24 +44,30 @@ public class DemoController {
 private Service service;
     @GetMapping("/")
     public @ResponseBody Iterable<Student> getStudents(){
-        return service.findAll();
+        return StudentRepository.findAll();
     }
 @GetMapping("image/{id}")
-public ResponseEntity<FileSystemResource> getimage(@PathVariable int id){
-    try {
+public ResponseEntity<Student> getimage(@PathVariable int id){
+    Student student=service.getStudentFileById(id);
+    if (student!=null)
+        return new ResponseEntity<>(student, HttpStatus.OK);
+    else
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
-        File file =service.getStudentFileById(id);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(new FileSystemResource(file));
-    } catch (IOException e) {
-        throw new RuntimeException(e);
-    }
+
+
+
+
 
 }
 
+    @GetMapping("/new/{id1}/image")
+    public ResponseEntity<byte[]> getImage(@PathVariable int id){
 
+        Student student=service.getStudentFileById(id);
+        byte[] imageFile=student.getData();
+        return ResponseEntity.ok().contentType(MediaType.valueOf(student.getName())).body(imageFile);
+    }
 
     @PostMapping("/upload")
     public String uploadImage(@RequestPart("file") MultipartFile file) throws IOException {
